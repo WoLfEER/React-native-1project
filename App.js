@@ -1,14 +1,16 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { Profiler, useCallback, useEffect, useState } from "react";
 import { View } from "react-native";
+
 import * as SplashScreen from "expo-splash-screen";
 import * as Font from "expo-font";
-import RegisterPage from "./src/screens/RegisterPage";
-// import LoginPage from "./src/screens/LoginPage";
+import { NavigationContainer } from "@react-navigation/native";
+import { useRoute } from "./router";
 
 SplashScreen.preventAutoHideAsync();
 
 export default function App() {
   const [appIsReady, setAppIsReady] = useState(false);
+  const routing = useRoute();
 
   useEffect(() => {
     async function prepare() {
@@ -36,10 +38,10 @@ export default function App() {
   if (!appIsReady) {
     return null;
   }
+
   return (
     <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
-      <RegisterPage />
-      {/* <LoginPage /> */}
+      <NavigationContainer>{routing}</NavigationContainer>
     </View>
   );
 }
