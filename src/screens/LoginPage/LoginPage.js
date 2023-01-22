@@ -1,41 +1,62 @@
-import React, { useState } from "react";
+import { useEffect, useState } from "react";
 import {
-  StyleSheet,
   Text,
   View,
   ImageBackground,
   TouchableOpacity,
-  Platform,
-  KeyboardAvoidingView,
   Keyboard,
   TouchableWithoutFeedback,
   Dimensions,
+  KeyboardAvoidingView,
 } from "react-native";
-import Button from "../../components/Button/Button";
+
+import { styles } from "./RegisterPage.styled";
+
+import AddAvatar from "./../../assets/images/addAvatar.svg";
 import StyledInput from "../../components/Button/StyledInput";
 
 const initialState = {
-  email: "",
   login: "",
+  email: "",
   password: "",
 };
 
-const RegisterPage = () => {
+const LoginPage = ({ navigation }) => {
+  const [isShowKeyboard, setIsShownKeyboard] = useState(false);
   const [value, setValue] = useState(initialState);
-  const [IsShowKeyboard, setIsShowKeyboard] = useState(false);
 
-  const hideKeyboard = () => {
-    setIsShowKeyboard(false);
-    Keyboard.dismiss();
-  };
+  const [dimensions, setDimension] = useState(
+    Dimensions.get("window").width - 16 * 2
+  );
 
-  const formSubmit = () => {
-    setIsShowKeyboard(false);
+  useEffect(() => {
+    const onChange = () => {
+      const width = Dimensions.get("window").width - 16 * 2;
+      setDimension(width);
+    };
+    Dimensions.addEventListener("change", onChange);
+    return () => {
+      Dimensions.removeEventListener?.("change", onChange);
+    };
+  }, []);
+
+  useEffect(() => {
+    Keyboard.addListener("keyboardDidHide", () => {
+      setIsShownKeyboard(false);
+      Keyboard.dismiss();
+    });
+    return () => {
+      Keyboard.removeAllListeners("keyboardDidHide");
+    };
+  }, []);
+
+  const keyboardHide = () => {
+    setIsShownKeyboard(false);
     Keyboard.dismiss();
-    console.log(value);
+
     setValue(initialState);
+    console.log(value);
   };
-
   const handleChangeText = (value, input) => {
     setValue((prevState) => ({
       ...prevState,
@@ -43,127 +64,85 @@ const RegisterPage = () => {
     }));
   };
 
-  const imagePath = "../../../assets/PhotoBG.jpg";
+  const imagePath = "../../assets/images/PhotoBG.jpg";
   const { email, password } = value;
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={{
-        flex: 1,
-        ...Platform.select({
-          ios: {
-            marginBottom: IsShowKeyboard ? 78 : 22,
-          },
-          android: {
-            marginBottom: 8,
-          },
-        }),
-      }}
-    >
-      <TouchableWithoutFeedback onPress={hideKeyboard}>
-        <View style={styles.container}>
-          <ImageBackground source={require(imagePath)} style={styles.image}>
-            <View style={styles.form}>
-              <Text style={styles.title}>Войти</Text>
-
-              <StyledInput
-                iconName={"mail"}
-                placeholder={"Адрес электронной почты"}
-                value={email}
-                textAlign="center"
-                style={styles.input}
-                error="email error"
-                onFocus={() => setIsShowKeyboard(true)}
-                onChangeText={(value) => handleChangeText(value, "email")}
-              />
-
-              <StyledInput
-                placeholder={"Пароль"}
-                iconName={"lock"}
-                textAlign="center"
-                style={styles.input}
-                password
-                value={password}
-                onFocus={() => setIsShowKeyboard(true)}
-                onChangeText={(value) => handleChangeText(value, "password")}
-              />
-              <Button
-                style={{
-                  marginBottom: 32,
-                  marginTop: IsShowKeyboard ? 30 : 43,
-                }}
-                activeOpacity={0.8}
-                title={"Зарегистрироваться"}
-                onPress={formSubmit}
-              ></Button>
-              <TouchableOpacity
-                activeOpacity={0.8}
-                onPress={() => console.log("route")}
-              >
-                <Text
-                  style={{
-                    ...styles.bottomText,
-                  }}
+    <TouchableWithoutFeedback onPress={keyboardHide}>
+      <View style={styles.container}>
+        <ImageBackground source={require(imagePath)} style={styles.image}>
+          <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : ""}
+          >
+            <View style={styles.wrap}>
+              <Text style={styles.wrapTitle}>Логин</Text>
+              <View style={styles.avatar}>
+                <TouchableOpacity
+                  style={styles.avatarBtn}
+                  activeOpacity={0.7}
+                  accessibilityLabel="add avatar"
+                  onPress={() => console.log("add avatar")}
                 >
-                  Нет аккаунта? Зарегистрироваться
-                </Text>
-              </TouchableOpacity>
+                  <AddAvatar fill={"#FF6C00"} stroke={"#FF6C00"} />
+                </TouchableOpacity>
+              </View>
+              <View
+                style={{
+                  paddingBottom: isShowKeyboard ? 15 : 45,
+                  width: dimensions,
+                }}
+              >
+                <StyledInput
+                  placeholder={"Адрес электронной почты"}
+                  iconName={"email"}
+                  value={email}
+                  textAlign="center"
+                  onFocus={() => setIsShownKeyboard(true)}
+                  onChangeText={(value) => handleChangeText(value, "email")}
+                />
+
+                <StyledInput
+                  placeholder={"Пароль"}
+                  iconName={"lock"}
+                  password
+                  textAlign="center"
+                  secureTextEntry={true}
+                  value={password}
+                  onFocus={() => setIsShownKeyboard(true)}
+                  onChangeText={(value) => handleChangeText(value, "password")}
+                />
+
+                <TouchableOpacity
+                  style={{ position: "absolute", right: 16, top: 148 }}
+                  activeOpacity={0.8}
+                ></TouchableOpacity>
+                {!isShowKeyboard ? (
+                  <TouchableOpacity
+                    style={styles.btn}
+                    activeOpacity={0.8}
+                    onPress={keyboardHide}
+                  >
+                    <Text style={styles.btnTitle}>Зарегистрироваться</Text>
+                  </TouchableOpacity>
+                ) : null}
+                {!isShowKeyboard ? (
+                  <TouchableOpacity
+                    style={styles.btnSecond}
+                    activeOpacity={0.8}
+                    onPress={() => navigation.navigate("Register")}
+                  >
+                    <Text style={styles.btnSecondTitle}>
+                      Нет аккаунта? Зарегистрироваться
+                    </Text>
+                  </TouchableOpacity>
+                ) : null}
+              </View>
             </View>
-          </ImageBackground>
-        </View>
-      </TouchableWithoutFeedback>
-    </KeyboardAvoidingView>
+          </KeyboardAvoidingView>
+        </ImageBackground>
+      </View>
+    </TouchableWithoutFeedback>
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  image: {
-    flex: 1,
-    justifyContent: "flex-end",
-  },
-
-  form: {
-    backgroundColor: "#fff",
-    borderTopRightRadius: 25,
-    borderTopLeftRadius: 25,
-    fontFamily: "Roboto-Regular",
-  },
-
-  avatar: {
-    position: "absolute",
-    width: 120,
-    height: 120,
-    top: -60,
-    left: Dimensions.get("window").width / 2 - 60,
-
-    backgroundColor: "#F6F6F6",
-    borderRadius: 16,
-  },
-  avatarIcon: {
-    position: "absolute",
-    bottom: 14,
-    right: -12,
-  },
-  title: {
-    fontFamily: "Roboto-Medium",
-    textAlign: "center",
-    marginTop: 32,
-    marginBottom: 32,
-    fontSize: 30,
-    color: "#212121",
-  },
-
-  bottomText: {
-    fontFamily: "Roboto-Regular",
-    marginTop: 16,
-    textAlign: "center",
-    color: "#1B4371",
-    fontSize: 16,
-  },
-});
-
-export default RegisterPage;
+export default LoginPage;
